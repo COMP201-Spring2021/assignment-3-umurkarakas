@@ -25,9 +25,12 @@ typedef struct Person {
 Person** initialWorld(int n,int worldSize) {
     Person** world = malloc(sizeof(Person*) * worldSize);
     int i;
+    int j = 0;
     for (i = 0; i< worldSize; i++) {
         world[i] = malloc(sizeof(Person));
 	world[i]->pos = i;
+        world[i]->condition = '1';
+        world[i]->sickCycles = 0;
         if((i % n) == 0) {
             if(i / n == 0) {
                 world[i]->neighbors[0] = i+1;
@@ -85,6 +88,14 @@ Person** initialWorld(int n,int worldSize) {
             }
         }
     }
+    while(j<INITIALCASES*worldSize) { 
+        int index = rand() % worldSize;
+        if(world[index]->condition == 49) {
+            world[index]->condition = 48;
+            world[index]->sickCycles = 1;
+            j++;
+        }
+    }
     return world;
 }
 
@@ -92,8 +103,12 @@ int main( int argc, char *argv[] )  {
    int worldSize = (int) pow(atoi(argv[1]), 2);
    double infectionChance = 1 - (atoi(argv[2])) / 100;
    int simLength = atoi(argv[3]);
+   int seed = atoi(argv[4]);
+   srand(seed);
    Person** world = initialWorld(atoi(argv[1]), worldSize);
    int i;
-   
+   for(i = 0; i<worldSize; i++) {
+       printf("%c", world[i]->condition);
+   }
    return 0;
 }
