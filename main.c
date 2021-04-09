@@ -2,7 +2,7 @@
  * The main aim of this assigment is getting familiar with dynamic arrays and heap management. 
  *  
  *  Please write your name and Student ID as comment below.
- *  Name and Surname:               Student ID:
+ *  Name and Surname: Umur Berkay Karakas        Student ID: 69075
  */
 
 
@@ -10,27 +10,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#define FRATE 0.03
-#define RRATE 0.97
+#define FRATE 3
+#define RRATE 97
 #define INITIALCASES 0.05
 
 
 typedef struct Person {
     char condition;
-    int pos;
     int neighbors[8];
     int sickCycles;
 } Person;
 
 Person** initialWorld(int n,int worldSize) {
     Person** world = malloc(sizeof(Person*) * worldSize);
-    int i;
+    int i,k;
     int j = 0;
     for (i = 0; i< worldSize; i++) {
         world[i] = malloc(sizeof(Person));
-	world[i]->pos = i;
-        world[i]->condition = '1';
+        world[i]->condition = 49;
         world[i]->sickCycles = 0;
+        for(k = 0; k< 8; k++) {
+            world[i]->neighbors[k] = 0;
+        }
         if((i % n) == 0) {
             if(i / n == 0) {
                 world[i]->neighbors[0] = i+1;
@@ -91,7 +92,7 @@ Person** initialWorld(int n,int worldSize) {
     while(j<INITIALCASES*worldSize) { 
         int index = rand() % worldSize;
         if(world[index]->condition == 49) {
-            world[index]->condition = 48;
+            world[index]->condition = 42;
             world[index]->sickCycles = 1;
             j++;
         }
@@ -99,16 +100,73 @@ Person** initialWorld(int n,int worldSize) {
     return world;
 }
 
+void cycleWorld(Person** world, int simLength, int worldSize, int infectionChance) {
+    int j,m,k,randVal,randVal2,overLimit,toDie;
+    m = 0;
+    int i=0;
+    while(i<simLength-1) {
+
+        for(j = 0; j<worldSize; j++) { 
+            if((world[j]->sickCycles > 0) && (world[j]->condition == 42)) {
+                for(k = 0; k<8; k++) {
+                    randVal = rand() % 100;  
+                    if(k == 0) {
+                        if(randVal < infectionChance) {
+                            if((world[(world[j]->neighbors)[k]]->sickCycles == 0) && (world[(world[j]->neighbors)[k]]->condition == 49)) {
+                                world[(world[j]->neighbors)[k]]->condition = 42;
+                            }
+                        } 
+                    } else {
+                        if(world[j]->neighbors[k] != 0) {  
+                            if(randVal < infectionChance) {
+                                if((world[(world[j]->neighbors)[k]]->sickCycles == 0) && (world[(world[j]->neighbors)[k]]->condition == 49)) {
+                                    world[(world[j]->neighbors)[k]]->condition = 42;
+                                }
+                            }        
+                        }
+                    }
+                }
+            }
+            
+        }
+        
+        for(j = 0; j<worldSize; j++) {
+            if(world[j]->condition == 42) {
+                world[j]->sickCycles++;
+            }
+        }
+        for(j = 0; j<worldSize; j++) {
+            randVal2 = rand() % 100;
+            if((world[j]->sickCycles > 4) && (world[j]->condition == 42)) {
+                if(randVal2 < FRATE) {
+                    world[j]->condition = 48;
+                } else {
+                    world[j]->condition = 49;
+                }
+            }
+        }
+        printf("\nSim %d:\t", i+2);
+        for(j = 0; j<worldSize; j++) {
+            printf("%c",world[j]->condition); 
+        }        
+        i++;
+    }
+}
+
 int main( int argc, char *argv[] )  {
-   int worldSize = (int) pow(atoi(argv[1]), 2);
-   double infectionChance = 1 - (atoi(argv[2])) / 100;
+   int worldSize = atoi(argv[1]) * atoi(argv[1]);
+   printf("%d\n", worldSize);
+   int infectionChance = 100 - atoi(argv[2]);
    int simLength = atoi(argv[3]);
    int seed = atoi(argv[4]);
    srand(seed);
    Person** world = initialWorld(atoi(argv[1]), worldSize);
-   int i;
+   int i,k;
+   printf("Sim 1:\t");
    for(i = 0; i<worldSize; i++) {
        printf("%c", world[i]->condition);
    }
+
+   cycleWorld(world, simLength, worldSize, infectionChance);
    return 0;
 }
