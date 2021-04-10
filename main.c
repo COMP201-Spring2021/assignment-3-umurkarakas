@@ -28,7 +28,7 @@ void cycleWorld(Person** world,int n, int simLength, int worldSize, int infectio
 Person** initialWorld(int n,int worldSize) {
     Person** world = malloc(sizeof(Person*) * worldSize);
     int i,k;
-    int j = 0;
+    int j = 1;
     for (i = 0; i< worldSize; i++) {
         world[i] = malloc(sizeof(Person));
         world[i]->condition = 49;
@@ -107,50 +107,44 @@ Person** initialWorld(int n,int worldSize) {
 void cycleWorld(Person** world, int n, int simLength, int worldSize, int infectionChance) {
     int j,m,k,randVal,randVal2,overLimit,toDie;
     m = 0;
-    int i=1;
-    while(i<simLength) {
-        for(j = 0; j<worldSize; j++) { 
-            if((world[j]->sickCycles > 0) && (world[j]->condition == 42)) {
-                for(k = 0; k<8; k++) {
-                    randVal = rand() % 100;  
-                    if(k == 0) {
-                        if(randVal < infectionChance) {
-                            if((world[(world[j]->neighbors)[k]]->sickCycles == 0) && (world[(world[j]->neighbors)[k]]->condition == 49)) {
-                                world[(world[j]->neighbors)[k]]->condition = 42;
-                            }
-                        } 
-                    } else {
-                        if(world[j]->neighbors[k] != 0) {  
-                            if(randVal < infectionChance) {
-                                if((world[(world[j]->neighbors)[k]]->sickCycles == 0) && (world[(world[j]->neighbors)[k]]->condition == 49)) {
-                                    world[(world[j]->neighbors)[k]]->condition = 42;
-                                }
-                            }        
-                        }
-                    }
-                }
-            }
-            
-        }
-        
-        for(j = 0; j<worldSize; j++) {
-            if(world[j]->condition == 42) {
-                world[j]->sickCycles++;
-            }
-        }
-        for(j = 0; j<worldSize; j++) {
-            randVal2 = rand() % 100;
-            if((world[j]->sickCycles > 4) && (world[j]->condition == 42)) {
-                if(randVal2 < FRATE) {
-                    world[j]->condition = 48;
-                } else {
-                    world[j]->condition = 49;
-                }
-            }
-        }       
-        i++;
-        writeToFile(world, i, n, worldSize);
-    }
+    for(j = 0; j<worldSize; j++) { 
+        if((world[j]->sickCycles > 0) && (world[j]->condition == 42)) {
+           for(k = 0; k<8; k++) {
+               randVal = rand() % 100;
+               if(k == 0) {
+                   if(randVal < infectionChance) {
+                       if((world[(world[j]->neighbors)[k]]->sickCycles == 0) && (world[(world[j]->neighbors)[k]]->condition == 49)) {
+                            world[(world[j]->neighbors)[k]]->condition = 42;
+                       }
+                   } 
+               } else {
+                   if(world[j]->neighbors[k] != 0) {  
+                       if(randVal < infectionChance) {
+                           if((world[(world[j]->neighbors)[k]]->sickCycles == 0) && (world[(world[j]->neighbors)[k]]->condition == 49)) {
+                               world[(world[j]->neighbors)[k]]->condition = 42;
+                           }
+                       }        
+                   }
+               }
+           }
+       }        
+   }
+
+   for(j = 0; j<worldSize; j++) {
+       if(world[j]->condition == 42) {
+           world[j]->sickCycles++;
+       }
+   }
+   for(j = 0; j<worldSize; j++) {
+       randVal2 = rand() % 100;
+       if((world[j]->sickCycles > 4) && (world[j]->condition == 42)) {
+           if(randVal2 < FRATE) {
+               world[j]->condition = 48;
+           } else {
+               world[j]->condition = 49;
+           }
+       }
+   }       
 }
 
 void writeToFile(Person** world, int cycleNum, int n, int worldSize) {
@@ -176,9 +170,41 @@ int main( int argc, char *argv[] )  {
    int infectionChance = 100 - atoi(argv[2]);
    int simLength = atoi(argv[3]);
    int seed = atoi(argv[4]);
+   int i,j,temp;
+   int totalInfections = 0;
+   int totalDeathCount = 0;
+   int totalRecoveredCases = 0;
+   int maxActiveCases = 5;
    srand(seed);
    Person** world = initialWorld(atoi(argv[1]), worldSize);
    writeToFile(world, 1, atoi(argv[1]), worldSize);
-   cycleWorld(world, simLength, worldSize, infectionChance);
+   for(i = 2; i<=simLength; i++) {
+       temp = 0;
+       cycleWorld(world, simLength, worldSize, infectionChance);
+       for(j = 0; j<worldSize;j++) {
+           if(world[j]->condition == 42) {
+               temp++;
+           }
+       }
+       if(temp > maxActiveCases) {
+           maxActiveCases = temp;
+       }
+       writeToFile(world, i, atoi(argv[1]), worldSize);
+   }
+   for(i = 0; i<worldSize; i++) {
+       if(world[i]->sickCycles>0) {
+           totalInfections++;
+           if(world[i]->condition == 49) {
+               totalRecoveredCases++;
+           }
+           if(world[i]->condition == 48) {
+               totalDeathCount++;
+           }    
+       }
+   }
+   printf("Total Infections: %d\n",totalInfections);
+   printf("Total Death Count: %d\n",totalDeathCount);
+   printf("Total Recovered Cases: %d\n",totalRecoveredCases);
+   printf("Max Active Cases: %d\n", maxActiveCases);
    return 0;
 }
