@@ -206,5 +206,11 @@ int main( int argc, char *argv[] )  {
    printf("Total Death Count: %d\n",totalDeathCount);
    printf("Total Recovered Cases: %d\n",totalRecoveredCases);
    printf("Max Active Cases: %d\n", maxActiveCases);
+      
+   for(i = 0; i<worldSize; i++) {
+       free(world[i]);
+   }
+   free(world);
+
    return 0;
 }
