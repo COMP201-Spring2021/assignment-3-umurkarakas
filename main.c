@@ -180,7 +180,7 @@ int main( int argc, char *argv[] )  {
    writeToFile(world, 1, atoi(argv[1]), worldSize);
    for(i = 2; i<=simLength; i++) {
        temp = 0;
-       cycleWorld(world, simLength, worldSize, infectionChance);
+       cycleWorld(world, atoi(argv[1]), simLength, worldSize, infectionChance);
        for(j = 0; j<worldSize;j++) {
            if(world[j]->condition == 42) {
                temp++;
