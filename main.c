@@ -162,6 +162,7 @@ void writeToFile(Person** world, int cycleNum, int n, int worldSize) {
         }
         fputs("\n", fp);
     }
+    fclose(fp);
 }
 
 int main( int argc, char *argv[] )  {
