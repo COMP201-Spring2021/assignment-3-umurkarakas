@@ -21,6 +21,10 @@ typedef struct Person {
     int sickCycles;
 } Person;
 
+void writeToFile(Person** world, int cycleNum, int n, int worldSize);
+Person** initialWorld(int n, int worldSize);
+void cycleWorld(Person** world,int n, int simLength, int worldSize, int infectionChance);
+
 Person** initialWorld(int n,int worldSize) {
     Person** world = malloc(sizeof(Person*) * worldSize);
     int i,k;
@@ -100,12 +104,11 @@ Person** initialWorld(int n,int worldSize) {
     return world;
 }
 
-void cycleWorld(Person** world, int simLength, int worldSize, int infectionChance) {
+void cycleWorld(Person** world, int n, int simLength, int worldSize, int infectionChance) {
     int j,m,k,randVal,randVal2,overLimit,toDie;
     m = 0;
-    int i=0;
-    while(i<simLength-1) {
-
+    int i=1;
+    while(i<simLength) {
         for(j = 0; j<worldSize; j++) { 
             if((world[j]->sickCycles > 0) && (world[j]->condition == 42)) {
                 for(k = 0; k<8; k++) {
@@ -144,12 +147,26 @@ void cycleWorld(Person** world, int simLength, int worldSize, int infectionChanc
                     world[j]->condition = 49;
                 }
             }
-        }
-        printf("\nSim %d:\t", i+2);
-        for(j = 0; j<worldSize; j++) {
-            printf("%c",world[j]->condition); 
-        }        
+        }       
         i++;
+        writeToFile(world, i, n, worldSize);
+    }
+}
+
+void writeToFile(Person** world, int cycleNum, int n, int worldSize) {
+    FILE *fp;
+    char txt[13];
+    snprintf(txt, 13, "CYCLE%d.txt", cycleNum);
+
+    fp = fopen(txt, "w");
+    char temp[3] = "1 ";
+    int i,j;
+    for(i = 0; i<n; i++) {
+        for(j = 0; j<n; j++) {
+            temp[0] = world[i*n+j]->condition;
+            fputs(temp, fp); 
+        }
+        fputs("\n", fp);
     }
 }
 
@@ -161,12 +178,7 @@ int main( int argc, char *argv[] )  {
    int seed = atoi(argv[4]);
    srand(seed);
    Person** world = initialWorld(atoi(argv[1]), worldSize);
-   int i,k;
-   printf("Sim 1:\t");
-   for(i = 0; i<worldSize; i++) {
-       printf("%c", world[i]->condition);
-   }
-
+   writeToFile(world, 1, atoi(argv[1]), worldSize);
    cycleWorld(world, simLength, worldSize, infectionChance);
    return 0;
 }
